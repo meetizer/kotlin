@@ -1,14 +1,25 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
-    <psi.referenceContributor language="kotlin" implementation="org.jetbrains.kotlin.idea.spring.references.KotlinSpringReferenceContributor"/>
+    <extensions defaultExtensionNs="com.intellij">
+        <psi.referenceContributor language="kotlin"
+                                  implementation="org.jetbrains.kotlin.idea.spring.references.KotlinSpringReferenceContributor"/>
 
-    <codeInsight.lineMarkerProvider language="kotlin" implementationClass="org.jetbrains.kotlin.idea.spring.lineMarking.KotlinSpringClassAnnotator"/>
+        <codeInsight.lineMarkerProvider language="kotlin"
+                                        implementationClass="org.jetbrains.kotlin.idea.spring.lineMarking.KotlinSpringClassAnnotator"/>
 
-    <localInspection implementationClass="org.jetbrains.kotlin.idea.spring.inspections.KotlinFinalClassOrFunSpringInspection"
-                     displayName="Final class or function with Spring annotation"
-                     groupName="Spring Core"
-                     groupPath="Kotlin,Spring"
-                     enabledByDefault="true"
-                     level="WARNING"/>
-  </extensions>
+        <localInspection implementationClass="org.jetbrains.kotlin.idea.spring.inspections.KotlinFinalClassOrFunSpringInspection"
+                         displayName="Final class or function with Spring annotation"
+                         groupName="Spring Core"
+                         groupPath="Kotlin,Spring"
+                         enabledByDefault="true"
+                         level="WARNING"/>
+        <localInspection language="kotlin"
+                         shortName="KotlinSpringFacetCodeInspection"
+                         bundle="resources.messages.SpringBundle"
+                         key="spring.facet.code.inspection"
+                         groupName="Spring Core"
+                         groupPath="Kotlin,Spring"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="org.jetbrains.kotlin.idea.spring.inspections.KotlinSpringFacetCodeInspection"/>
+    </extensions>
 </idea-plugin>
