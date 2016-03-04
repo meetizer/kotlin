@@ -22,8 +22,8 @@ fun main(args : Array<String>) {
         foo(<!DEBUG_INFO_SMARTCAST!>x<!>)
     } else {
         foo(<!TYPE_MISMATCH, DEBUG_INFO_CONSTANT!>x<!>)
-        <!UNREACHABLE_CODE!>foo(<!><!ALWAYS_NULL!>x<!>!!<!UNREACHABLE_CODE!>)<!>
-        <!UNREACHABLE_CODE!>foo(<!DEBUG_INFO_SMARTCAST!>x<!>)<!>
+        foo(<!ALWAYS_NULL!>x<!>!!)
+        foo(<!DEBUG_INFO_SMARTCAST!>x<!>)
     }
 
     foo(<!DEBUG_INFO_SMARTCAST!>x<!>)

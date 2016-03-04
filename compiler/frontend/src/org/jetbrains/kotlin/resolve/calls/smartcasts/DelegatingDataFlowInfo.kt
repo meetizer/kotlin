@@ -159,25 +159,13 @@ internal class DelegatingDataFlowInfo private constructor(
         var changed = putNullability(builder, a, nullabilityOfA.refine(nullabilityOfB)) or
                       putNullability(builder, b, nullabilityOfB.refine(nullabilityOfA))
 
-        val newTypeInfo = newTypeInfo()
-        newTypeInfo.putAll(a, getPredictableTypes(b, false))
-        newTypeInfo.putAll(b, getPredictableTypes(a, false))
-        if (a.type != b.type) {
-            // To avoid recording base types of own type
-            if (!a.type.isSubtypeOf(b.type)) {
-                newTypeInfo.put(a, b.type)
-            }
-            if (!b.type.isSubtypeOf(a.type)) {
-                newTypeInfo.put(b, a.type)
-            }
-        }
-        changed = changed or !newTypeInfo.isEmpty
+        // NB: == has no guarantees of type equality, see KT-11280 for the example
 
         return if (!changed) {
             this
         }
         else {
-            create(this, ImmutableMap.copyOf(builder), if (newTypeInfo.isEmpty) EMPTY_TYPE_INFO else newTypeInfo)
+            create(this, ImmutableMap.copyOf(builder), EMPTY_TYPE_INFO)
         }
     }
 
