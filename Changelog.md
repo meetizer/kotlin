@@ -1,5 +1,9 @@
-= CHANGELOG =
+# CHANGELOG
 
-== 1.1 ==
+## Unreleased
+### JS
+- Safe calls (`x?.let { it }`) are now inlined
 
-== 1.0.2 ==
+## 1.1
+
+## 1.0.2
