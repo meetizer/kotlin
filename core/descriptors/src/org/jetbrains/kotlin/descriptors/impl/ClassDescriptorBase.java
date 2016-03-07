@@ -17,10 +17,15 @@
 package org.jetbrains.kotlin.descriptors.impl;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.storage.StorageManager;
+import org.jetbrains.kotlin.types.KotlinType;
+
+import java.util.Collection;
+import java.util.Collections;
 
 public abstract class ClassDescriptorBase extends AbstractClassDescriptor {
 
@@ -48,5 +53,14 @@ public abstract class ClassDescriptorBase extends AbstractClassDescriptor {
     @Override
     public SourceElement getSource() {
         return source;
+    }
+
+    @NotNull
+    @Override
+    protected Collection<KotlinType> getAdditionalNeighbours() {
+        if (getContainingDeclaration() instanceof ClassDescriptor) {
+            return Collections.singleton(((ClassDescriptor) getContainingDeclaration()).getDefaultType());
+        }
+        return Collections.emptyList();
     }
 }

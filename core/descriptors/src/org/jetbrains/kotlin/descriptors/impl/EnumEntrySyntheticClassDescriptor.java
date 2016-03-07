@@ -93,6 +93,13 @@ public class EnumEntrySyntheticClassDescriptor extends ClassDescriptorBase {
 
     @NotNull
     @Override
+    protected Collection<KotlinType> resolveSupertypes() {
+        // Supertypes are calculated manually
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    @Override
     public MemberScope getUnsubstitutedMemberScope() {
         return scope;
     }

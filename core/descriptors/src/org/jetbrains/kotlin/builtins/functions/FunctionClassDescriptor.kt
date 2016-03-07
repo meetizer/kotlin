@@ -106,43 +106,41 @@ class FunctionClassDescriptor(
 
     override fun getDeclaredTypeParameters() = parameters
 
-    private inner class FunctionTypeConstructor : AbstractClassTypeConstructor() {
+    override fun resolveSupertypes(): Collection<KotlinType> {
+        val result = ArrayList<KotlinType>(2)
 
-        private val supertypes = storageManager.createLazyValue {
-            val result = ArrayList<KotlinType>(2)
+        fun add(packageFragment: PackageFragmentDescriptor, name: Name) {
+            val descriptor = packageFragment.getMemberScope().getContributedClassifier(name, NoLookupLocation.FROM_BUILTINS) as? ClassDescriptor
+                             ?: error("Class $name not found in $packageFragment")
 
-            fun add(packageFragment: PackageFragmentDescriptor, name: Name) {
-                val descriptor = packageFragment.getMemberScope().getContributedClassifier(name, NoLookupLocation.FROM_BUILTINS) as? ClassDescriptor
-                                 ?: error("Class $name not found in $packageFragment")
+            val typeConstructor = descriptor.typeConstructor
 
-                val typeConstructor = descriptor.typeConstructor
-
-                // Substitute all type parameters of the super class with our last type parameters
-                val arguments = parameters.takeLast(typeConstructor.parameters.size).map {
-                    TypeProjectionImpl(it.defaultType)
-                }
-
-                result.add(KotlinTypeImpl.create(Annotations.EMPTY, descriptor, false, arguments))
+            // Substitute all type parameters of the super class with our last type parameters
+            val arguments = parameters.takeLast(typeConstructor.parameters.size).map {
+                TypeProjectionImpl(it.defaultType)
             }
 
-            // Add unnumbered base class, e.g. Function for Function{n}, KFunction for KFunction{n}
-            add(containingDeclaration, Name.identifier(functionKind.classNamePrefix))
-
-            // For KFunction{n}, add corresponding numbered Function{n} class, e.g. Function2 for KFunction2
-            if (functionKind == Kind.KFunction) {
-                val module = containingDeclaration.containingDeclaration
-                val kotlinPackageFragment = module.getPackage(BUILT_INS_PACKAGE_FQ_NAME).fragments.single()
-
-                add(kotlinPackageFragment, Kind.Function.numberedClassName(arity))
-            }
-
-            result.toReadOnlyList()
+            result.add(KotlinTypeImpl.create(Annotations.EMPTY, descriptor, false, arguments))
         }
 
+        // Add unnumbered base class, e.g. Function for Function{n}, KFunction for KFunction{n}
+        add(containingDeclaration, Name.identifier(functionKind.classNamePrefix))
+
+        // For KFunction{n}, add corresponding numbered Function{n} class, e.g. Function2 for KFunction2
+        if (functionKind == Kind.KFunction) {
+            val module = containingDeclaration.containingDeclaration
+            val kotlinPackageFragment = module.getPackage(BUILT_INS_PACKAGE_FQ_NAME).fragments.single()
+
+            add(kotlinPackageFragment, Kind.Function.numberedClassName(arity))
+        }
+
+        return result.toReadOnlyList()
+    }
+
+    private inner class FunctionTypeConstructor : AbstractClassTypeConstructor() {
         override fun getParameters() = this@FunctionClassDescriptor.parameters
 
-        override fun getSupertypes(): Collection<KotlinType> = supertypes()
-
+        override fun getSupertypes(): Collection<KotlinType> = supertypesWithoutCycles
         override fun getDeclarationDescriptor() = this@FunctionClassDescriptor
         override fun isDenotable() = true
         override fun isFinal() = false

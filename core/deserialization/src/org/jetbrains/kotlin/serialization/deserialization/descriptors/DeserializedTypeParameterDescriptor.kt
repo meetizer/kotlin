@@ -54,7 +54,7 @@ class DeserializedTypeParameterDescriptor(
         }
     }
 
-    override fun getSupertypeLoopChecker() = SupertypeLoopChecker.EMPTY
+    override val supertypeLoopChecker: SupertypeLoopChecker get() = SupertypeLoopChecker.EMPTY
 
     override fun reportCycleError(type: KotlinType) = throw IllegalStateException(
             "There should be no cycles for deserialized type parameters, but found for: $this")

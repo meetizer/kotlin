@@ -29,14 +29,13 @@ import org.jetbrains.kotlin.types.*;
 
 import java.util.List;
 
-public abstract class AbstractClassDescriptor implements ClassDescriptor {
-    private final Name name;
+public abstract class AbstractClassDescriptor extends AbstractClassifierDescriptor implements ClassDescriptor {
     protected final NotNullLazyValue<KotlinType> defaultType;
     private final NotNullLazyValue<MemberScope> unsubstitutedInnerClassesScope;
     private final NotNullLazyValue<ReceiverParameterDescriptor> thisAsReceiverParameter;
 
     public AbstractClassDescriptor(@NotNull StorageManager storageManager, @NotNull Name name) {
-        this.name = name;
+        super(storageManager, name);
         this.defaultType = storageManager.createLazyValue(new Function0<KotlinType>() {
             @Override
             public KotlinType invoke() {
@@ -55,12 +54,6 @@ public abstract class AbstractClassDescriptor implements ClassDescriptor {
                 return new LazyClassReceiverParameterDescriptor(AbstractClassDescriptor.this);
             }
         });
-    }
-
-    @NotNull
-    @Override
-    public Name getName() {
-        return name;
     }
 
     @NotNull

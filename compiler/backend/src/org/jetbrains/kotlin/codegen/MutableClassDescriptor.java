@@ -126,6 +126,13 @@ public class MutableClassDescriptor extends ClassDescriptorBase implements Class
 
     @NotNull
     @Override
+    protected Collection<KotlinType> resolveSupertypes() {
+        // Supertypes are calculated manually
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    @Override
     public Set<ConstructorDescriptor> getConstructors() {
         return Collections.emptySet();
     }

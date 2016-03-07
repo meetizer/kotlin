@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.descriptors.impl;
 
 import kotlin.jvm.functions.Function1;
+import org.jetbrains.annotations.Mutable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
@@ -103,7 +104,6 @@ public class TypeParameterDescriptorImpl extends AbstractTypeParameterDescriptor
     ) {
         super(LockBasedStorageManager.NO_LOCKS, containingDeclaration, annotations, name, variance, reified, index, source);
         this.reportCycleError = reportCycleError;
-        // ?
         this.supertypeLoopsChecker = supertypeLoopsChecker;
     }
 
@@ -119,6 +119,13 @@ public class TypeParameterDescriptorImpl extends AbstractTypeParameterDescriptor
                 Collections.<TypeParameterDescriptor>emptyList(),
                 upperBounds
         );
+    }
+
+    @NotNull
+    @Mutable
+    @Override
+    protected List<KotlinType> customResultingSupertypesStorage() {
+        return upperBounds;
     }
 
     private void checkInitialized() {

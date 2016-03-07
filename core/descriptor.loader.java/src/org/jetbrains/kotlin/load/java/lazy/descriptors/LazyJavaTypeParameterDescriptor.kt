@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.load.java.lazy.descriptors
 
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.descriptors.SupertypeLoopChecker
 import org.jetbrains.kotlin.descriptors.impl.AbstractLazyTypeParameterDescriptor
 import org.jetbrains.kotlin.load.java.components.TypeUsage
 import org.jetbrains.kotlin.load.java.lazy.LazyJavaResolverContext
@@ -55,7 +56,7 @@ class LazyJavaTypeParameterDescriptor(
         }
     }
 
-    override fun getSupertypeLoopChecker() = c.components.supertypeLoopChecker
+    override val supertypeLoopChecker: SupertypeLoopChecker get() = c.components.supertypeLoopChecker
 
     override fun reportCycleError(type: KotlinType) {
         // Do nothing

@@ -69,6 +69,13 @@ public class ClassDescriptorImpl extends ClassDescriptorBase {
                                                                   Collections.<TypeParameterDescriptor>emptyList(), supertypes);
     }
 
+    @NotNull
+    @Override
+    protected Collection<KotlinType> resolveSupertypes() {
+        // Supertypes are calculated manually
+        return Collections.emptyList();
+    }
+
     public final void initialize(
             @NotNull MemberScope unsubstitutedMemberScope,
             @NotNull Set<ConstructorDescriptor> constructors,

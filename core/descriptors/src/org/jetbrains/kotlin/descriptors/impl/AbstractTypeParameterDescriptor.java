@@ -16,10 +16,9 @@
 
 package org.jetbrains.kotlin.descriptors.impl;
 
-import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
-import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.name.Name;
@@ -30,22 +29,20 @@ import org.jetbrains.kotlin.storage.NotNullLazyValue;
 import org.jetbrains.kotlin.storage.StorageManager;
 import org.jetbrains.kotlin.types.*;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt.getBuiltIns;
-
-public abstract class AbstractTypeParameterDescriptor extends DeclarationDescriptorNonRootImpl implements TypeParameterDescriptor {
-    public static final List<KotlinType> FALLBACK_UPPER_BOUNDS_ON_RECURSION =
-            Collections.singletonList(ErrorUtils.createErrorType("Recursion while calculating upper bounds"));
-
+public abstract class AbstractTypeParameterDescriptor extends AbstractClassifierDescriptor implements TypeParameterDescriptor {
     private final Variance variance;
     private final boolean reified;
     private final int index;
 
     private final NotNullLazyValue<TypeConstructor> typeConstructor;
     private final NotNullLazyValue<KotlinType> defaultType;
-    private final NotNullLazyValue<List<KotlinType>> upperBounds;
+    private final DeclarationDescriptor containingDeclaration;
+    private final Annotations annotations;
+    private final SourceElement source;
 
     protected AbstractTypeParameterDescriptor(
             @NotNull final StorageManager storageManager,
@@ -57,10 +54,13 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
             int index,
             @NotNull SourceElement source
     ) {
-        super(containingDeclaration, annotations, name, source);
+        super(storageManager, name);
         this.variance = variance;
         this.reified = isReified;
         this.index = index;
+        this.containingDeclaration = containingDeclaration;
+        this.annotations = annotations;
+        this.source = source;
 
         this.typeConstructor = storageManager.createLazyValue(new Function0<TypeConstructor>() {
             @Override
@@ -85,56 +85,25 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
                 );
             }
         });
-        this.upperBounds = storageManager.createLazyValueWithPostCompute(
-                new Function0<List<KotlinType>>() {
-                    @Override
-                    public List<KotlinType> invoke() {
-                        return resolveUpperBounds();
-                    }
-                },
-                new Function1<Boolean, List<KotlinType>>() {
-                    @Override
-                    public List<KotlinType> invoke(Boolean aBoolean) {
-                        return FALLBACK_UPPER_BOUNDS_ON_RECURSION;
-                    }
-                },
-                new Function1<List<KotlinType>, Unit>() {
-                    @Override
-                    public Unit invoke(List<KotlinType> types) {
-                        getSupertypeLoopChecker().findLoopsInSupertypesAndDisconnect(
-                                getTypeConstructor(),
-                                types,
-                                new Function1<TypeConstructor, Iterable<? extends KotlinType>>() {
-                                    @Override
-                                    public Iterable<? extends KotlinType> invoke(TypeConstructor typeConstructor) {
-                                        if (typeConstructor.getDeclarationDescriptor() instanceof AbstractTypeParameterDescriptor) {
-                                            return ((AbstractTypeParameterDescriptor) typeConstructor.getDeclarationDescriptor())
-                                                    .resolveUpperBounds();
-                                        }
-                                        return typeConstructor.getSupertypes();
-                                    }
-                                },
-                                new Function1<KotlinType, Unit>() {
-                                    @Override
-                                    public Unit invoke(KotlinType type) {
-                                        reportCycleError(type);
-                                        return Unit.INSTANCE;
-                                    }
-                                }
-                        );
-
-                        if (types.isEmpty()) {
-                            types.add(ErrorUtils.createErrorType("Cyclic upper bounds"));
-                        }
-
-                        return null;
-                    }
-                });
     }
 
+    @Override
     @NotNull
     protected abstract SupertypeLoopChecker getSupertypeLoopChecker();
+    @Override
     protected abstract void reportCycleError(@NotNull KotlinType type);
+
+    @NotNull
+    @Override
+    protected Collection<KotlinType> resolveSupertypes() {
+        return resolveUpperBounds();
+    }
+
+    @Nullable
+    @Override
+    protected KotlinType defaultSupertypeIfEmpty() {
+        return ErrorUtils.createErrorType("Cyclic upper bounds");
+    }
 
     @NotNull
     protected abstract List<KotlinType> resolveUpperBounds();
@@ -166,7 +135,7 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
     @NotNull
     @Override
     public List<KotlinType> getUpperBounds() {
-        return upperBounds.invoke();
+        return getSupertypesWithoutCycles();
     }
 
     @NotNull
@@ -191,5 +160,34 @@ public abstract class AbstractTypeParameterDescriptor extends DeclarationDescrip
     @Override
     public <R, D> R accept(DeclarationDescriptorVisitor<R, D> visitor, D data) {
         return visitor.visitTypeParameterDescriptor(this, data);
+    }
+
+    @NotNull
+    @Override
+    public Annotations getAnnotations() {
+        return annotations;
+    }
+
+    @Override
+    public void acceptVoid(DeclarationDescriptorVisitor<Void, Void> visitor) {
+        visitor.visitTypeParameterDescriptor(this, null);
+    }
+
+    @NotNull
+    @Override
+    public DeclarationDescriptorWithSource getOriginal() {
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public SourceElement getSource() {
+        return source;
+    }
+
+    @NotNull
+    @Override
+    public DeclarationDescriptor getContainingDeclaration() {
+        return containingDeclaration;
     }
 }

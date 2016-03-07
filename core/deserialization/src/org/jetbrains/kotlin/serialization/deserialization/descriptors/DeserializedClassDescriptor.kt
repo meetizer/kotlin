@@ -137,7 +137,7 @@ class DeserializedClassDescriptor(
 
     override fun getCompanionObjectDescriptor(): ClassDescriptor? = companionObjectDescriptor()
 
-    private fun computeSupertypes(): Collection<KotlinType> {
+    override fun resolveSupertypes(): Collection<KotlinType> {
         val result = ArrayList<KotlinType>(classProto.supertypeCount)
         val unresolved = ArrayList<DeserializedType>(0)
 
@@ -171,17 +171,13 @@ class DeserializedClassDescriptor(
     override fun getDeclaredTypeParameters() = c.typeDeserializer.ownTypeParameters
 
     private inner class DeserializedClassTypeConstructor : AbstractClassTypeConstructor() {
-        private val supertypes = c.storageManager.createLazyValue {
-            computeSupertypes()
-        }
-
         private val parameters = c.storageManager.createLazyValue {
             this@DeserializedClassDescriptor.computeConstructorTypeParameters()
         }
 
         override fun getParameters() = parameters()
 
-        override fun getSupertypes() = supertypes()
+        override fun getSupertypes() = supertypesWithoutCycles
 
         override fun isFinal(): Boolean = isFinalClass
 
