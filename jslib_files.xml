@@ -12,7 +12,17 @@
 
     <union id="js.lib.files">
         <fileset dir="${basedir}/js/js.libraries/src">
-            <include name="**/*.kt" />
+            <include name="**/*.kt"/>
+
+            <exclude name="stdlib/browser.kt"/>
+            <exclude name="stdlib/domCode.kt"/>
+            <exclude name="jquery/*.kt"/>
+            <exclude name="dom/*.kt"/>
+            <exclude name="generated/*.kt"/>
+
+            <exclude name="junit/*.kt"/>
+            <exclude name="qunit/*.kt"/>
+            <exclude name="stdlib/testCode.kt"/>
         </fileset>
 
         <fileset dir="${basedir}/core/builtins/src">
@@ -20,16 +30,18 @@
             <include name="kotlin/annotation/Annotations.kt"/>
         </fileset>
 
+        <!--
         <fileset dir="${basedir}/libraries/kotlin.test/shared">
-            <include name="src/main/kotlin/kotlin/test/TestAssertions.kt" />
+            <include name="src/main/kotlin/kotlin/test/TestAssertions.kt"/>
         </fileset>
+        -->
 
         <fileset dir="${basedir}/${intermediate-sources}/stdlib/js">
-            <include name="**/*.kt" />
+            <include name="**/*.kt"/>
 
             <!-- JVM specific -->
-            <exclude name="**/*JVM.kt" />
-            <exclude name="kotlin/jvm/**" />
+            <exclude name="**/*JVM.kt"/>
+            <exclude name="kotlin/jvm/**"/>
         </fileset>
     </union>
 </project>
